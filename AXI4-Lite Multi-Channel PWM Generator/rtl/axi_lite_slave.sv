@@ -1,6 +1,6 @@
 
 module axi_lite_slave #(
-  parameter ADDR_WIDTH = 5,    // Width of word-aligned address (e.g. 5 → 32×4B = 128B space)
+  parameter ADDR_WIDTH = 5,   
   parameter DATA_WIDTH = 32
 )(
   input  logic                 ACLK,
