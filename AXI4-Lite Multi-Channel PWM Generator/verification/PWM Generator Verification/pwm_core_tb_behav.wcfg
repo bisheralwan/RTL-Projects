@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="pwm_core_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="pwm_core_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="1,005.837 ns"></ZoomEndTime>
+      <Cursor1Time time="325.000 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="303"></NameColumnWidth>
+      <ValueColumnWidth column_width="127"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="14" />
+   <wvobject fp_name="/pwm_core_tb/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/resetn" type="logic">
+      <obj_property name="ElementShortName">resetn</obj_property>
+      <obj_property name="ObjectShortName">resetn</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/i_prescale" type="array">
+      <obj_property name="ElementShortName">i_prescale[15:0]</obj_property>
+      <obj_property name="ObjectShortName">i_prescale[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/i_period" type="array">
+      <obj_property name="ElementShortName">i_period[15:0][3:0]</obj_property>
+      <obj_property name="ObjectShortName">i_period[15:0][3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/i_duty" type="array">
+      <obj_property name="ElementShortName">i_duty[15:0][3:0]</obj_property>
+      <obj_property name="ObjectShortName">i_duty[15:0][3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/i_enable" type="logic">
+      <obj_property name="ElementShortName">i_enable</obj_property>
+      <obj_property name="ObjectShortName">i_enable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/o_pwm_out" type="array">
+      <obj_property name="ElementShortName">o_pwm_out[3:0]</obj_property>
+      <obj_property name="ObjectShortName">o_pwm_out[3:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/NUM_CHANNELS" type="array">
+      <obj_property name="ElementShortName">NUM_CHANNELS[31:0]</obj_property>
+      <obj_property name="ObjectShortName">NUM_CHANNELS[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/REG_WIDTH" type="array">
+      <obj_property name="ElementShortName">REG_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">REG_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/PRESCALER_WIDTH" type="array">
+      <obj_property name="ElementShortName">PRESCALER_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">PRESCALER_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/dut/tick" type="logic">
+      <obj_property name="ElementShortName">tick</obj_property>
+      <obj_property name="ObjectShortName">tick</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/dut/prescale_cnt" type="array">
+      <obj_property name="ElementShortName">prescale_cnt[15:0]</obj_property>
+      <obj_property name="ObjectShortName">prescale_cnt[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/dut/\gen_pwm_channel[0].counter " type="array">
+      <obj_property name="ElementShortName">\gen_pwm_channel[0].counter [15:0]</obj_property>
+      <obj_property name="ObjectShortName">\gen_pwm_channel[0].counter [15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/pwm_core_tb/dut/\gen_pwm_channel[0].pwm_reg " type="logic">
+      <obj_property name="ElementShortName">\gen_pwm_channel[0].pwm_reg </obj_property>
+      <obj_property name="ObjectShortName">\gen_pwm_channel[0].pwm_reg </obj_property>
+   </wvobject>
+</wave_config>
