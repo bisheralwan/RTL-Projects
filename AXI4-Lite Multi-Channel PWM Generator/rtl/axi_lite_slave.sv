@@ -71,7 +71,7 @@ module axi_lite_slave #(
     if (WVALID  && WREADY ) write_data <= WDATA;
   end
 
-  // Pulse write_en when BVALID first asserted
+  // Pulse write_en when BVALID first asserted - master only asserts BREADY after BVALID is seen high, which would then assert write_en
   assign write_en = (BVALID && !BREADY);
 
   //==========================================================================
