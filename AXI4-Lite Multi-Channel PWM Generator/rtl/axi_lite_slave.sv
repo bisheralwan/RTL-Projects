@@ -1,9 +1,3 @@
-//==============================================================================
-// axi_lite_slave.sv
-// Simple AXI4-Lite slave that presents a single-beat read/write interface.
-// Decoded outputs: write_en, write_addr, write_data, read_en, read_addr.
-// Connect this to your pwm_regs or any register file.
-//==============================================================================
 
 module axi_lite_slave #(
   parameter ADDR_WIDTH = 5,    // Width of word-aligned address (e.g. 5 → 32×4B = 128B space)
