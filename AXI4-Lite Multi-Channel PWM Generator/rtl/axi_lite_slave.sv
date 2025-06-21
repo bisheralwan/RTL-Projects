@@ -1,4 +1,3 @@
-
 module axi_lite_slave #(
   parameter ADDR_WIDTH = 5,   
   parameter DATA_WIDTH = 32
