@@ -2,7 +2,7 @@
 // This module connects the AXI Lite Slave -> PWM Register Interface -> PWM Core
 
 module axi_pwm #(
-    parameter PWM_WIDTH = 8,             // Width of the PWM signal
+    parameter PWM_WIDTH = 8,             // Width of the PWM signal TODO: What is this for? 
     parameter AXI_ADDR_WIDTH = 5,        // Address width for AXI interface
     parameter AXI_DATA_WIDTH = 32,       // Data width for AXI interface
     parameter NUM_CHANNELS      = 4,     // Number of PWM channels
