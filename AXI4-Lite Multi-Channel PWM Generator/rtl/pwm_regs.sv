@@ -2,20 +2,22 @@
 // Software sets register values, which are inputs to the pwm core 
 
 module pwm_regs #(
-  parameter int REG_WIDTH      = 16,
-  parameter int NUM_CHANNELS   = 4
+  parameter  int  REG_WIDTH      = 16,
+  parameter  int  NUM_CHANNELS   = 4
+  localparam int DEPTH          = 1 + 2*NUM_CHANNELS // 1 for prescale, 2 for each channel (period and duty)
+  localparam int ADDR_WIDTH     = $clog2(DEPTH) // Address width for the register file
 )(
   input  logic                     clk,
   input  logic                     rst_n,
 
   // AXI-decoded write port
   input  logic                     write_en,
-  input  logic [4:0]               write_addr,
+  input  logic [ADDR_WIDTH-1:0]    write_addr,
   input  logic [31:0]              write_data,
 
   // AXI-decoded read port
   input  logic                     read_en,
-  input  logic [4:0]               read_addr,
+  input  logic [ADDR_WIDTH-1:0]    read_addr,
   output logic [31:0]              read_data,
 
   // Outputs to PWM core
@@ -24,54 +26,33 @@ module pwm_regs #(
   output logic [REG_WIDTH-1:0]     duty     [NUM_CHANNELS-1:0]
 );
 
-  // Internal registers
-  logic [REG_WIDTH-1:0] reg_prescale;
-  logic [REG_WIDTH-1:0] reg_period [NUM_CHANNELS-1:0];
-  logic [REG_WIDTH-1:0] reg_duty   [NUM_CHANNELS-1:0];
+  // Forcing BRAM inference
+  (*ram_style = "block"*)
+  logic [REG_WIDTH-1:0] mem [0:DEPTH-1];
 
-  // Register write logic
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      reg_prescale <= '0;
-      for (int i = 0; i < NUM_CHANNELS; i++) begin
-        reg_period[i] <= '0;
-        reg_duty[i]   <= '0;
+      // Clear the memory on reset
+      for (int i = 0; i< DEPTH; i++) begin
+        mem[i] <= '0;
       end
-    end else if (write_en) begin
-      case (write_addr)
-        5'h00: reg_prescale         <= write_data[REG_WIDTH-1:0];
-        5'h01: reg_period[0]        <= write_data[REG_WIDTH-1:0];
-        5'h02: reg_duty[0]          <= write_data[REG_WIDTH-1:0];
-        5'h03: reg_period[1]        <= write_data[REG_WIDTH-1:0];
-        5'h04: reg_duty[1]          <= write_data[REG_WIDTH-1:0];
-        5'h05: reg_period[2]        <= write_data[REG_WIDTH-1:0];
-        5'h06: reg_duty[2]          <= write_data[REG_WIDTH-1:0];
-        5'h07: reg_period[3]        <= write_data[REG_WIDTH-1:0];
-        5'h08: reg_duty[3]          <= write_data[REG_WIDTH-1:0];
-        default: ; //do nothing
-      endcase
+    end else if (write_en && (write_addr < DEPTH)) begin 
+      mem[write_addr] <= write_data[REG_WIDTH-1:0];
+    end 
+  end
+
+  always_comb begin
+    if (read_en && (read_addr < DEPTH)) begin
+      read_data = {{{32-REG_WIDTH}{1'b0}}, mem[read_addr]};
+    end else begin
+      read_data = 32'h0; // Default value when not reading
     end
   end
 
-  // Register read logic (for debug)
-  always_comb begin
-    case (read_addr)
-      5'h00: read_data = {16'h0, reg_prescale};
-      5'h01: read_data = {16'h0, reg_period[0]};
-      5'h02: read_data = {16'h0, reg_duty[0]};
-      5'h03: read_data = {16'h0, reg_period[1]};
-      5'h04: read_data = {16'h0, reg_duty[1]};
-      5'h05: read_data = {16'h0, reg_period[2]};
-      5'h06: read_data = {16'h0, reg_duty[2]};
-      5'h07: read_data = {16'h0, reg_period[3]};
-      5'h08: read_data = {16'h0, reg_duty[3]};
-      default: read_data = 32'h0;
-    endcase
+  assign prescale = mem[0]; // Prescale register at address 0
+  for (int i = 0; i < NUM_CHANNELS; i++) begin
+    period[i] = mem[1 + 2*i]; // Period register for channel i at address 1 + 2*i
+    duty[i]   = mem[2 + 2*i]; // Duty register for channel i at address 2 + 2*i
   end
-
-  // Outputs to core
-  assign prescale = reg_prescale;
-  assign period   = reg_period;
-  assign duty     = reg_duty;
 
 endmodule
