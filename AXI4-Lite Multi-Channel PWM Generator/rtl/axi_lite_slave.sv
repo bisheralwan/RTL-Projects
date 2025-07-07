@@ -1,6 +1,6 @@
 module axi_lite_slave #(
   parameter ADDR_WIDTH = 5,   
-  parameter DATA_WIDTH = 32
+  parameter REG_WIDTH = 16
 )(
   input  logic                 ACLK,
   input  logic                 ARESETn,
@@ -13,7 +13,7 @@ module axi_lite_slave #(
   // AXI4-Lite Slave Write Data Channel
   input  logic                 WVALID,
   output logic                 WREADY,
-  input  logic [DATA_WIDTH-1:0] WDATA,
+  input  logic [REG_WIDTH-1:0] WDATA,
 
   // AXI4-Lite Slave Write Response Channel
   output logic                 BVALID,
@@ -27,15 +27,15 @@ module axi_lite_slave #(
   // AXI4-Lite Slave Read Data Channel
   output logic                 RVALID,
   input  logic                 RREADY,
-  output logic [DATA_WIDTH-1:0] RDATA,
+  output logic [REG_WIDTH-1:0] RDATA,
 
   // Decoded single-beat interface
   output logic                 write_en,    // pulses for one cycle when write occurs
   output logic [ADDR_WIDTH-1:0] write_addr,
-  output logic [DATA_WIDTH-1:0] write_data,
+  output logic [REG_WIDTH-1:0] write_data,
   output logic                 read_en,     // pulses for one cycle when read occurs
   output logic [ADDR_WIDTH-1:0] read_addr,
-  input  logic [DATA_WIDTH-1:0] read_data,   // fed by register file
+  input  logic [REG_WIDTH-1:0] read_data,   // fed by register file
   input  logic                 read_valid   // register file drives valid when read_data is ready
 );
 

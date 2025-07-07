@@ -2,8 +2,8 @@
 // Software sets register values, which are inputs to the pwm core 
 
 module pwm_regs #(
-  parameter  int  REG_WIDTH      = 16,
-  parameter  int  NUM_CHANNELS   = 4
+  parameter  int REG_WIDTH      = 16,
+  parameter  int NUM_CHANNELS   = 4
   localparam int DEPTH          = 1 + 2*NUM_CHANNELS // 1 for prescale, 2 for each channel (period and duty)
   localparam int ADDR_WIDTH     = $clog2(DEPTH) // Address width for the register file
 )(
@@ -13,12 +13,12 @@ module pwm_regs #(
   // AXI-decoded write port
   input  logic                     write_en,
   input  logic [ADDR_WIDTH-1:0]    write_addr,
-  input  logic [31:0]              write_data,
+  input  logic [REG_WIDTH-1:0]              write_data,
 
   // AXI-decoded read port
   input  logic                     read_en,
   input  logic [ADDR_WIDTH-1:0]    read_addr,
-  output logic [31:0]              read_data,
+  output logic [REG_WIDTH-1:0]              read_data,
   output logic                     read_valid,
 
   // Outputs to PWM core
@@ -44,10 +44,10 @@ module pwm_regs #(
 
   always_comb begin
     if (read_en && (read_addr < DEPTH)) begin
-      read_data = {{{32-REG_WIDTH}{1'b0}}, mem[read_addr]};
+      read_data = mem[read_addr];
       read_valid = 1'b1;
     end else begin
-      read_data = 32'h0; // Default value when not reading
+      read_data = 0; // Default value when not reading
       read_valid = 1'b0;
     end
   end
