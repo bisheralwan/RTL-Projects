@@ -19,6 +19,7 @@ module pwm_regs #(
   input  logic                     read_en,
   input  logic [ADDR_WIDTH-1:0]    read_addr,
   output logic [31:0]              read_data,
+  output logic                     read_valid,
 
   // Outputs to PWM core
   output logic [REG_WIDTH-1:0]     prescale,
@@ -44,8 +45,10 @@ module pwm_regs #(
   always_comb begin
     if (read_en && (read_addr < DEPTH)) begin
       read_data = {{{32-REG_WIDTH}{1'b0}}, mem[read_addr]};
+      read_valid = 1'b1;
     end else begin
       read_data = 32'h0; // Default value when not reading
+      read_valid = 1'b0;
     end
   end
 
