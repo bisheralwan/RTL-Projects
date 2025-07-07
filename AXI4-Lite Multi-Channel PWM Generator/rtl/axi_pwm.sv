@@ -99,6 +99,7 @@ module axi_pwm #(
         .read_en    (read_en),
         .read_addr  (read_addr),
         .read_data  (read_data),
+        .read_valid (read_valid),
         .prescale   (prescale),
         .period     (period),
         .duty       (duty)
