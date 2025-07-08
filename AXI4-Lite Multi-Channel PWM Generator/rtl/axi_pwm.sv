@@ -2,51 +2,51 @@
 // This module connects the AXI Lite Slave -> PWM Register Interface -> PWM Core
 
 module axi_pwm #(
-    parameter PWM_WIDTH = 8,             // Width of the PWM signal TODO: What is this for? 
-    parameter AXI_ADDR_WIDTH = 5,        // Address width for AXI interface
-    parameter AXI_DATA_WIDTH = 32,       // Data width for AXI interface
-    parameter NUM_CHANNELS      = 4,     // Number of PWM channels
-    parameter REG_WIDTH         = 16,    // Width of i_period/i_duty registers
-    parameter PRESCALER_WIDTH   = 16     // Width of i_prescaler register
+    parameter NUM_CHANNELS      = 4,               // Number of PWM channels
+    parameter REG_WIDTH         = 16,              // Width of i_period/i_duty registers
+    parameter MEM_DEPTH = 1 + 1 + 2*NUM_CHANNELS,  // 1 cntrl_reg + 1 prescale + 2 for each channel (period and duty)
+    parameter AXI_ADDR_WIDTH = $clog2(MEM_DEPTH)   // Address width for AXI interface
 )(
     input wire clk,
     input wire rst_n,
     
     // AXI Lite Slave Interface
-    input wire axi_awvalid,
-    output wire axi_awready,
-    input wire [AXI_ADDR_WIDTH-1:0] axi_awaddr,
+    input  wire                      axi_awvalid,
+    output wire                      axi_awready,
+    input  wire [AXI_ADDR_WIDTH-1:0] axi_awaddr,
 
-    input wire axi_wvalid,
-    output wire axi_wready,
-    input wire [AXI_DATA_WIDTH-1:0] axi_wdata,
+    input  wire                      axi_wvalid,
+    output wire                      axi_wready,
+    input  wire [REG_WIDTH-1:0]      axi_wdata,
 
-    output wire axi_bvalid,
-    input wire axi_bready,
+    output wire                      axi_bvalid,
+    input  wire                      axi_bready,
 
-    input wire axi_arvalid,
-    output wire axi_arready,
-    input wire [AXI_ADDR_WIDTH-1:0] axi_araddr,
+    input  wire                      axi_arvalid,
+    output wire                      axi_arready,
+    input  wire [AXI_ADDR_WIDTH-1:0] axi_araddr,
 
-    output wire axi_rvalid,
-    input wire axi_rready,
-    output wire [AXI_DATA_WIDTH-1:0] axi_rdata,
+    output wire                      axi_rvalid,
+    input  wire                      axi_rready,
+    output wire [REG_WIDTH-1:0]      axi_rdata,
 
     // PWM Core enable
-    input wire pwm_enable,
+    input  wire                      pwm_enable,
 
     // PWM Core Output
-    output wire [NUM_CHANNELS-1:0] pwm_out,
+    output wire [NUM_CHANNELS-1:0]   pwm_out
 );
     
     // Internal signals for AXI-lite <-> regs
-    wire                  write_en;
-    wire [AXI_ADDR_WIDTH-1:0] write_addr;
-    wire [AXI_DATA_WIDTH-1:0] write_data;
-    wire                  read_en;
-    wire [AXI_ADDR_WIDTH-1:0] read_addr;
-    wire [AXI_DATA_WIDTH-1:0] read_data;
-    wire                  read_valid;
+    wire                               write_en;
+    wire [AXI_ADDR_WIDTH-1:0]          write_addr;
+    wire [REG_WIDTH-1:0]               write_data;
+    wire                               read_en;
+    wire [AXI_ADDR_WIDTH-1:0]          read_addr;
+    wire [REG_WIDTH-1:0]               read_data;
+    wire                               read_valid;
+    wire [NUM_CHANNELS:0]              pwm_enable_reg;      //TODO: Will add this as an enable for each channel, and and bit 0 will be the global enable. Max num of channels will then be REG_WIDTH-1 as we are constrained by the register definition in the memroy to 16 bits.
+                                                     
 
     // Internal signals for regs <-> core
     wire [REG_WIDTH-1:0] prescale;
@@ -56,10 +56,13 @@ module axi_pwm #(
     // PWM output bus
     wire [NUM_CHANNELS-1:0] pwm_out_vec;
 
+    localparam int MEM_DEPTH = 1 + 2*NUM_CHANNELS;     // 1 for prescale, 2 for each channel (period and duty)
+    localparam int MEM_ADDR_WIDTH = $clog2(MEM_DEPTH); // Address width for the register file
+
     // AXI4-Lite Slave
     axi_lite_slave #(
         .ADDR_WIDTH(AXI_ADDR_WIDTH),
-        .DATA_WIDTH(AXI_DATA_WIDTH)
+        .REG_WIDTH(REG_WIDTH)
     ) u_axi_lite_slave (
         .ACLK      (clk),
         .ARESETn   (rst_n),
@@ -99,17 +102,16 @@ module axi_pwm #(
         .read_en    (read_en),
         .read_addr  (read_addr),
         .read_data  (read_data),
-        .read_valid (read_valid),
         .prescale   (prescale),
         .period     (period),
-        .duty       (duty)
+        .duty       (duty),
+        .pwm_enable_reg(pwm_enable_reg) // Global enable for PWM channels
     );
 
     // PWM Core
     pwm_core #(
         .NUM_CHANNELS(NUM_CHANNELS),
-        .REG_WIDTH(REG_WIDTH),
-        .PRESCALER_WIDTH(PRESCALER_WIDTH)
+        .REG_WIDTH(REG_WIDTH)
     ) u_pwm_core (
         .i_clk      (clk),
         .i_resetn   (rst_n),
