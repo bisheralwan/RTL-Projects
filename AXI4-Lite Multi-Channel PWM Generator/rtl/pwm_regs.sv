@@ -3,9 +3,9 @@
 
 module pwm_regs #(
   parameter  int REG_WIDTH      = 16,
-  parameter  int NUM_CHANNELS   = 4
-  localparam int DEPTH          = 1 + 2*NUM_CHANNELS // 1 for prescale, 2 for each channel (period and duty)
-  localparam int ADDR_WIDTH     = $clog2(DEPTH)      // Address width for the register file
+  parameter  int NUM_CHANNELS   = 4,                      // NOTE: Max number of channels is 15 (limited by register_width-1)  
+  localparam int DEPTH          = 1 + 1 + 2*NUM_CHANNELS, // 1 for prescale, 2 for each channel (period and duty) + 1 ctrl reg
+  localparam int ADDR_WIDTH     = $clog2(DEPTH)           // Address width for the register file
 )(
   input  logic                     clk,
   input  logic                     rst_n,
@@ -24,7 +24,8 @@ module pwm_regs #(
   // Outputs to PWM core
   output logic [REG_WIDTH-1:0]     prescale,
   output logic [REG_WIDTH-1:0]     period   [NUM_CHANNELS-1:0],
-  output logic [REG_WIDTH-1:0]     duty     [NUM_CHANNELS-1:0]
+  output logic [REG_WIDTH-1:0]     duty     [NUM_CHANNELS-1:0],
+  output logic [NUM_CHANNELS:0]    pwm_enable_reg // Global enable for PWM channels
 );
 
   // Forcing BRAM inference
@@ -58,11 +59,12 @@ module pwm_regs #(
     end
   end
 
-  assign prescale = mem[0]; // Prescale register at address 0
+  assign pwm_enable_reg = mem[0][NUM_CHANNELS:0]; // Extract only bits 0 to NUM_CHANNELS from mem[0]
+  assign prescale = mem[1]; // Prescale register at address 1
   always_comb begin
     for (int i = 0; i < NUM_CHANNELS; i++) begin
-      period[i] = mem[1 + 2*i]; // Period register for channel i at address 1 + 2*i
-      duty[i]   = mem[2 + 2*i]; // Duty register for channel i at address 2 + 2*i
+      period[i] = mem[2 + 2*i]; // Period register for channel i at address 2 + 2*i
+      duty[i]   = mem[3 + 2*i]; // Duty register for channel i at address 3 + 2*i
     end
   end
 endmodule
