@@ -62,30 +62,42 @@
 
 module pwm_core #(
   parameter int NUM_CHANNELS      = 4,     // Number of PWM channels
-  parameter int REG_WIDTH         = 16,    // Width of i_period/i_duty registers
-  parameter int PRESCALER_WIDTH   = 16     // Width of i_prescaler register
+  parameter int REG_WIDTH         = 16     // Width of i_period/i_duty registers
 )(
-  input  logic                                        i_clk,        // System clock
-  input  logic                                        i_resetn,     // Active-low reset
-  input  logic [PRESCALER_WIDTH-1:0]                  i_prescale,   // Clock division factor (0 = no division)
-  input  logic [REG_WIDTH-1:0][NUM_CHANNELS-1:0]      i_period,     // i_period values (packed array)
-  input  logic [REG_WIDTH-1:0][NUM_CHANNELS-1:0]      i_duty,       // i_duty cycle values (packed array)
-  input  logic                                        i_enable,     // Global PWM i_enable
-  output logic [NUM_CHANNELS-1:0]                     o_pwm_out     // PWM channel outputs
+  input  logic                                        i_clk,            // System clock
+  input  logic                                        i_resetn,         // Active-low reset
+  input  logic [REG_WIDTH-1:0]                        i_prescale,       // Clock division factor (0 = no division)
+  input  logic [REG_WIDTH-1:0][NUM_CHANNELS-1:0]      i_period,         // i_period values (packed array)
+  input  logic [REG_WIDTH-1:0][NUM_CHANNELS-1:0]      i_duty,           // i_duty cycle values (packed array)
+  input  logic [NUM_CHANNELS:0]                       i_pwm_enable_reg, 
+  output logic [NUM_CHANNELS-1:0]                     o_pwm_out         // PWM channel outputs
 );
+
+  //============================================================================
+  // Enable Signals
+  //============================================================================
+  logic [NUM_CHANNELS-1:0] channel_enable; // Enable for each channel
+  logic enable; // Global enable signal
+  always_comb begin
+    // Extract enable bits for each channel from i_pwm_enable_reg
+    for (int i = 0; i < NUM_CHANNELS; i++) begin
+      channel_enable[i] = i_pwm_enable_reg[i+1]; // i_pwm_enable_reg[0] is global enable
+    end
+    enable = i_pwm_enable_reg[0]; // Global enable is the first bit
+  end
 
   //============================================================================
   // Internal Signals
   //============================================================================
   logic                           tick;           // i_prescaler tick pulse
-  logic [PRESCALER_WIDTH-1:0]   prescale_cnt;     // i_prescaler counter
+  logic [REG_WIDTH-1:0]   prescale_cnt;     // i_prescaler counter
 
   //============================================================================
   // i_prescaler: Generate tick pulse every (i_prescale+1) clock cycles
   // When i_prescale = 0, tick is always high (no division)
   //============================================================================
   always_ff @(posedge i_clk or negedge i_resetn) begin
-    if (!i_resetn || !i_enable) begin
+    if (!i_resetn || !enable) begin
       prescale_cnt <= '0;
       tick         <= 1'b0;
     end else begin
@@ -110,7 +122,7 @@ module pwm_core #(
       logic                 pwm_reg = '0; 
       
       always_ff @(posedge i_clk or negedge i_resetn) begin
-        if (!i_resetn || !i_enable) begin
+        if (!i_resetn || !enable) begin
           counter  <= '0;
           pwm_reg  <= 1'b0;
         end else if (tick) begin
@@ -134,8 +146,8 @@ module pwm_core #(
       end
       
       // Output assignment
-      assign o_pwm_out[i] = pwm_reg;
-      
+      assign o_pwm_out[i] = channel_enable[i] ? pwm_reg : 1'b0;
+
     end : gen_pwm_channel
   endgenerate
 endmodule
